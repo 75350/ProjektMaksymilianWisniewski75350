@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog Książek</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --lc-green: #71a832; --lc-green-hover: #5d8a29; --text-dark: #333333; --text-muted: #777777; --bg-color: #f4f4f4; --border-color: #e0e0e0; --card-bg: #ffffff; --gold: #d4af37; }
+        body { font-family: 'Open Sans', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 0; }
+        .navbar { background-color: var(--lc-green); color: white; padding: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
+        .navbar h1 { margin: 0; font-size: 1.6em; font-weight: 700; cursor: pointer; letter-spacing: -0.5px; }
+        .student-info { text-align: right; font-size: 0.9em; line-height: 1.4; opacity: 0.95; font-weight: 600; }
+
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr; gap: 30px; }
+        @media(min-width: 850px) { .container { grid-template-columns: 340px 1fr; } }
+
+        .panel { background: var(--card-bg); padding: 25px; border: 1px solid var(--border-color); border-top: 4px solid var(--lc-green); margin-bottom: 20px; height: fit-content; }
+        .panel h2 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; }
+        input, textarea, select { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 3px; font-family: 'Open Sans', sans-serif; font-size: 0.95em; box-sizing: border-box; }
+        input:focus, textarea:focus, select:focus { border-color: var(--lc-green); outline: none; }
+
+        button { padding: 12px; border: none; border-radius: 3px; font-size: 0.95em; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-success { background-color: var(--lc-green); color: white; width: 100%; }
+        .btn-success:hover { background-color: var(--lc-green-hover); }
+        .btn-secondary { background-color: #f0f0f0; color: var(--text-dark); border: 1px solid #ccc; width: 100%; }
+        .btn-secondary:hover { background-color: #e0e0e0; }
+
+        .hint-box { background-color: #f8f9fa; border: 1px dashed #ccc; padding: 10px; margin-top: 15px; font-size: 0.8em; color: #555; border-radius: 3px; }
+
+        .stats-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; text-align: center; border-radius: 3px; }
+        .stat-card .stat-value { font-size: 1.6em; font-weight: 700; color: var(--lc-green); margin-bottom: 2px; }
+        .stat-card .stat-label { font-size: 0.8em; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+
+        .list-header { background: var(--card-bg); padding: 20px; border: 1px solid var(--border-color); margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
+        @media(min-width: 600px) { .list-header { flex-direction: row; justify-content: space-between; align-items: center; } }
+        
+        .search-box { display: flex; align-items: center; gap: 10px; flex-grow: 1; max-width: 400px; position: relative; }
+        .search-box i { position: absolute; left: 12px; color: var(--text-muted); }
+        .search-box input { padding-left: 35px; }
+        .sort-control { display: flex; align-items: center; gap: 10px; font-size: 0.9em; font-weight: 600; white-space: nowrap; }
+        .sort-control select { width: auto; padding: 5px 30px 5px 10px; }
+
+        #booksList, #authorBooksList { display: flex; flex-direction: column; gap: 20px; }
+        .book-card { background: var(--card-bg); border: 1px solid var(--border-color); display: flex; flex-direction: column; position: relative; }
+        .book-card.gold-edition { border: 2px solid var(--gold); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15); }
+        
+        .book-card-main { display: flex; gap: 20px; padding: 20px; }
+        .book-cover-wrapper { width: 100px; min-width: 100px; height: 145px; background-color: #eaeaea; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); overflow: hidden; }
+        .book-cover-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .book-cover-wrapper i { font-size: 2.5em; color: var(--text-light); }
+
+        .book-content { flex-grow: 1; display: flex; flex-direction: column; }
+        .book-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 5px; }
+        .book-title-row h3 { margin: 0; font-size: 1.3em; color: var(--lc-green); }
+        .book-card.gold-edition .book-title-row h3 { color: var(--gold); }
+        
+        .genre-badge { background-color: #eef2f7; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: 700; margin-left: 10px; text-transform: uppercase; display: inline-block; vertical-align: middle; }
+        
+        /* KLIKALNY AUTOR */
+        .book-author { color: #0056b3; font-size: 0.9em; font-weight: 600; margin-bottom: 15px; cursor: pointer; display: inline-block; transition: color 0.2s; }
+        .book-author:hover { color: var(--lc-green); text-decoration: underline; }
+        
+        .book-rating { background-color: var(--lc-green); color: white; padding: 4px 10px; border-radius: 3px; font-weight: bold; font-size: 0.95em; display: flex; align-items: center; gap: 5px; }
+        .book-card.gold-edition .book-rating { background-color: var(--gold); }
+        
+        .book-desc { font-size: 0.95em; line-height: 1.6; color: var(--text-dark); border-top: 1px dotted var(--border-color); padding-top: 12px; margin-bottom: 15px; flex-grow: 1; }
+        
+        .book-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px solid #f0f0f0; padding-top: 10px;}
+        .footer-left, .footer-right { display: flex; gap: 15px; }
+
+        .btn-action { background: transparent; border: none; color: var(--text-muted); font-size: 0.9em; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 600; padding: 5px 10px; text-transform: none; border-radius: 3px; }
+        .btn-action:hover { background-color: #f8f9fa; color: var(--text-dark); }
+        .btn-action:hover.btn-edit { color: #0056b3; }
+        .btn-action:hover.btn-delete { color: #dc3545; }
+
+        .comments-container { background-color: #fafafa; border-top: 1px solid var(--border-color); padding: 15px 20px; display: none; }
+        .comment-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-header { font-size: 0.8em; color: var(--text-muted); margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .comment-user { font-weight: bold; color: var(--lc-green); }
+        .comment-text { font-size: 0.9em; color: var(--text-dark); line-height: 1.4; }
+        
+        .add-comment-box { display: flex; gap: 10px; margin-top: 15px; }
+        .add-comment-box input { flex-grow: 1; padding: 8px 12px; }
+        .add-comment-box button { width: auto; padding: 8px 15px; font-size: 0.85em; }
+
+        /* WIDOK AUTORA */
+        #authorProfileView { display: none; }
+        .author-header { background: var(--card-bg); padding: 30px; border: 1px solid var(--border-color); border-top: 4px solid var(--lc-green); text-align: center; margin-bottom: 20px; }
+        .author-header h2 { margin: 0 0 15px 0; font-size: 2em; color: var(--text-dark); }
+        .btn-back { background: var(--text-dark); color: white; display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; margin-bottom: 20px; }
+        .btn-back:hover { background: #1a1a1a; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="navbar-container">
+            <h1 onclick="closeAuthorView()"><i class="fa-solid fa-book-open"></i> Moja Biblioteczka</h1>
+            <div class="student-info">
+                Maksymilian Wiśniewski<br>
+                Nr albumu: 75350
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Lewa kolumna: Autoryzacja i Zarządzanie -->
+        <div>
+            <div class="panel">
+                <h2 id="authTitle">Profil Użytkownika</h2>
+                <div id="guestView">
+                    <form id="loginForm">
+                        <div class="form-group"><label>Login:</label><input type="text" id="loginUser" required></div>
+                        <div class="form-group"><label>Hasło:</label><input type="password" id="loginPass" required></div>
+                        <button type="submit" class="btn-success">Zaloguj się</button>
+                    </form>
+                    <div class="hint-box">
+                        <strong>Konta do testów projektu:</strong><br>
+                        • Admin (CRUD): admin / admin123<br>
+                        • Użytkownik: user / user123
+                    </div>
+                </div>
+
+                <div id="userView" style="display: none;">
+                    <p style="margin-top: 0; font-weight: 600;">Witaj, <span id="sessionUsername" style="color: var(--lc-green);"></span>!</p>
+                    <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 20px;">Uprawnienia: <span id="sessionRole" style="font-weight: bold; text-transform: uppercase;"></span></p>
+                    <button onclick="handleLogout()" class="btn-secondary">Wyloguj się</button>
+                </div>
+            </div>
+
+            <div class="panel" id="managementPanel" style="display: none;">
+                <h2 id="formTitle">Dodaj książkę</h2>
+                <form id="addBookForm">
+                    <div class="form-group"><label>Tytuł książki:</label><input type="text" id="title" required></div>
+                    <div class="form-group"><label>Autor:</label><input type="text" id="author" required></div>
+                    <div class="form-group">
+                        <label>Gatunek:</label>
+                        <select id="genre">
+                            <option value="Literatura piękna">Literatura piękna</option>
+                            <option value="Kryminał / Sensacja">Kryminał / Sensacja</option>
+                            <option value="Sci-Fi / Fantasy">Sci-Fi / Fantasy</option>
+                            <option value="Komiks / Literatura graficzna">Komiks / Literatura graficzna</option>
+                            <option value="Informatyka / IT">Informatyka / IT</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Link do okładki (URL):</label><input type="url" id="coverUrl" placeholder="https://przyklad.pl/okladka.jpg"></div>
+                    <div class="form-group"><label>Ocena (1-10):</label><input type="number" id="rating" min="1" max="10" value="10" required></div>
+                    <div class="form-group"><label>Twoja opinia:</label><textarea id="description" rows="4"></textarea></div>
+                    <div class="btn-container">
+                        <button type="submit" id="submitBtn" class="btn-submit btn-success">Dodaj do biblioteki</button>
+                        <button type="button" id="cancelBtn" class="btn-cancel btn-secondary" style="display: none;" onclick="resetFormState()">Anuluj</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Prawa kolumna: Zmienia się w zależności od widoku -->
+        <div>
+            <!-- WIDOK 1: GŁÓWNY KATALOG -->
+            <div id="catalogView">
+                <div class="stats-summary">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statBooks">0</div>
+                        <div class="stat-label">Książki</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statRating">0.00</div>
+                        <div class="stat-label">Śr. Ocena</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statComments">0</div>
+                        <div class="stat-label">Komentarze</div>
+                    </div>
+                </div>
+
+                <div class="list-header">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Szukaj po tytule lub autorze..." oninput="renderBooks()">
+                    </div>
+                    <div class="sort-control">
+                        <label for="sortSelect" style="margin: 0; font-weight: normal;">Sortuj:</label>
+                        <select id="sortSelect" onchange="renderBooks()">
+                            <option value="title_asc">Tytułu (A-Z)</option>
+                            <option value="author_asc">Autora (A-Z)</option>
+                            <option value="rating_desc">Oceny (Najwyższe)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="booksList"></div>
+            </div>
+
+            <!-- WIDOK 2: STRONA AUTORA (NOWOŚĆ) -->
+            <div id="authorProfileView">
+                <button onclick="closeAuthorView()" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Powrót do katalogu</button>
+                <div class="author-header">
+                    <h2 id="authorPageName">Nazwa Autora</h2>
+                    <div class="stats-summary" style="margin-bottom: 0;">
+                        <div class="stat-card" style="border: none; background: transparent;">
+                            <div class="stat-value" id="authorStatBooks">0</div>
+                            <div class="stat-label">Dzieła w bazie</div>
+                        </div>
+                        <div class="stat-card" style="border: none; background: transparent;">
+                            <div class="stat-value" id="authorStatRating">0.00</div>
+                            <div class="stat-label">Średnia ocena</div>
+                        </div>
+                    </div>
+                </div>
+                <h3 style="margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Książki tego autora:</h3>
+                <div id="authorBooksList"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentBooks = []; 
+        let editingId = null;  
+        let currentUser = JSON.parse(localStorage.getItem('user')) || null;
+
+        updateAuthUI();
+        fetchBooks();
+
+        // --- STATYSTYKI ---
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                document.getElementById('statBooks').innerText = stats.totalBooks;
+                document.getElementById('statRating').innerText = stats.avgRating;
+                document.getElementById('statComments').innerText = stats.totalComments;
+            } catch (error) { console.error("Błąd pobierania statystyk:", error); }
+        }
+
+        // --- AUTORYZACJA ---
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUser').value;
+            const password = document.getElementById('loginPass').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert(err.error);
+                    return;
+                }
+
+                currentUser = await response.json();
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                document.getElementById('loginForm').reset();
+                updateAuthUI();
+                renderBooks(); 
+            } catch (error) { console.error(error); }
+        });
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('user');
+            resetFormState();
+            updateAuthUI();
+            renderBooks();
+            closeAuthorView();
+        }
+
+        function updateAuthUI() {
+            const guestView = document.getElementById('guestView');
+            const userView = document.getElementById('userView');
+            const managementPanel = document.getElementById('managementPanel');
+
+            if (currentUser) {
+                guestView.style.display = 'none';
+                userView.style.display = 'block';
+                document.getElementById('sessionUsername').innerText = currentUser.username;
+                document.getElementById('sessionRole').innerText = currentUser.role;
+                managementPanel.style.display = 'block';
+            } else {
+                guestView.style.display = 'block';
+                userView.style.display = 'none';
+                managementPanel.style.display = 'none';
+            }
+        }
+
+        // --- GENEROWANIE KARTY KSIĄŻKI (Wspólne dla Katalogu i Autora) ---
+        function createBookCard(book) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = book.rating === 10 ? 'book-card gold-edition' : 'book-card';
+
+            const coverHTML = book.cover_url 
+                ? `<img src="${book.cover_url}" alt="Okładka" onerror="this.setErrorHTML(this)">`
+                : `<i class="fa-solid fa-book"></i>`;
+
+            let adminActionsHTML = '';
+            if (currentUser && currentUser.role === 'admin') {
+                adminActionsHTML = `
+                    <button onclick="startEdit(${book.id})" class="btn-action btn-edit"><i class="fa-solid fa-pen"></i> Edytuj</button>
+                    <button onclick="deleteBook(${book.id})" class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Usuń</button>
+                `;
+            }
+
+            cardDiv.innerHTML = `
+                <div class="book-card-main">
+                    <div class="book-cover-wrapper">${coverHTML}</div>
+                    <div class="book-content">
+                        <div class="book-header">
+                            <div class="book-info">
+                                <h3>${book.title} <span class="genre-badge">${book.genre || 'Inny'}</span></h3>
+                                <div class="book-author" onclick="viewAuthor('${book.author.replace(/'/g, "\\'")}')"><i class="fa-solid fa-user-pen"></i> ${book.author}</div>
+                            </div>
+                            <div class="book-rating"><i class="fa-solid fa-star"></i> ${book.rating}/10</div>
+                        </div>
+                        <div class="book-desc">${book.description || ' Brak opinii.'}</div>
+                        
+                        <div class="book-footer">
+                            <div class="footer-left">
+                                <button onclick="toggleComments(${book.id})" class="btn-action"><i class="fa-solid fa-comments"></i> Dyskusja / Komentarze</button>
+                            </div>
+                            <div class="footer-right">
+                                ${adminActionsHTML}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="comments-section-${book.id}" class="comments-container">
+                    <div id="comments-list-${book.id}">
+                        <div style="text-align:center; padding: 10px; color: #888;">Ładowanie komentarzy...</div>
+                    </div>
+                    <div class="add-comment-box">
+                        <input type="text" id="comment-input-${book.id}" placeholder="Napisz komentarz..." ${!currentUser ? 'disabled' : ''}>
+                        <button onclick="postComment(${book.id})" class="btn-success" style="width:auto;" ${!currentUser ? 'disabled' : ''}>Wyślij</button>
+                    </div>
+                </div>
+            `;
+            return cardDiv;
+        }
+
+        function setErrorHTML(img) {
+            const wrapper = img.parentElement;
+            wrapper.innerHTML = `<i class="fa-solid fa-book-bookmark" style="font-size: 2.5em; color: var(--text-muted);"></i>`;
+        }
+
+        // --- KATALOG KSIĄŻEK ---
+        async function fetchBooks() {
+            const response = await fetch('/api/books');
+            currentBooks = await response.json();
+            renderBooks();
+            updateStats(); 
+        }
+
+        function renderBooks() {
+            const sortMethod = document.getElementById('sortSelect').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            let filteredBooks = currentBooks.filter(book => {
+                return book.title.toLowerCase().includes(searchQuery) || book.author.toLowerCase().includes(searchQuery);
+            });
+
+            if (sortMethod === 'title_asc') filteredBooks.sort((a, b) => a.title.localeCompare(b.title, 'pl'));
+            else if (sortMethod === 'author_asc') filteredBooks.sort((a, b) => a.author.localeCompare(b.author, 'pl'));
+            else if (sortMethod === 'rating_desc') filteredBooks.sort((a, b) => b.rating - a.rating); 
+
+            const listDiv = document.getElementById('booksList');
+            listDiv.innerHTML = ''; 
+            
+            if (filteredBooks.length === 0) {
+                listDiv.innerHTML = '<div style="background: white; border: 1px solid var(--border-color); padding: 30px; text-align: center; color: var(--text-muted);">Brak pozycji.</div>';
+                return;
+            }
+
+            filteredBooks.forEach(book => {
+                listDiv.appendChild(createBookCard(book));
+            });
+        }
+
+        // --- STRONA AUTORA (NOWOŚĆ) ---
+        function viewAuthor(authorName) {
+            // Ukryj katalog, pokaż stronę autora
+            document.getElementById('catalogView').style.display = 'none';
+            document.getElementById('authorProfileView').style.display = 'block';
+            
+            // Filtrowanie książek dla tego autora
+            const authorBooks = currentBooks.filter(b => b.author === authorName);
+            
+            // Obliczanie statystyk autora
+            const total = authorBooks.length;
+            const avg = authorBooks.reduce((sum, b) => sum + b.rating, 0) / total;
+
+            document.getElementById('authorPageName').innerText = authorName;
+            document.getElementById('authorStatBooks').innerText = total;
+            document.getElementById('authorStatRating').innerText = avg.toFixed(2);
+
+            // Wyświetlenie książek autora
+            const authorListDiv = document.getElementById('authorBooksList');
+            authorListDiv.innerHTML = '';
+            
+            // Sortowanie po ocenie malejąco domyślnie na stronie autora
+            authorBooks.sort((a, b) => b.rating - a.rating);
+            authorBooks.forEach(book => {
+                authorListDiv.appendChild(createBookCard(book));
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function closeAuthorView() {
+            document.getElementById('authorProfileView').style.display = 'none';
+            document.getElementById('catalogView').style.display = 'block';
+            renderBooks(); // Odświeżenie na wszelki wypadek
+        }
+
+        // --- OBSŁUGA KOMENTARZY ---
+        async function toggleComments(bookId) {
+            const section = document.getElementById(`comments-section-${bookId}`);
+            if (section.style.display === 'block') {
+                section.style.display = 'none';
+            } else {
+                section.style.display = 'block';
+                await loadComments(bookId);
+            }
+        }
+
+        async function loadComments(bookId) {
+            const listDiv = document.getElementById(`comments-list-${bookId}`);
+            const response = await fetch(`/api/books/${bookId}/comments`);
+            const comments = await response.json();
+            
+            listDiv.innerHTML = '';
+            if (comments.length === 0) {
+                listDiv.innerHTML = '<div style="color: #888; font-style: italic; font-size: 0.9em;">Brak komentarzy.</div>';
+                return;
+            }
+
+            comments.forEach(c => {
+                const date = new Date(c.created_at).toLocaleString('pl-PL', {day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'});
+                listDiv.innerHTML += `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <span class="comment-user"><i class="fa-solid fa-user-circle"></i> ${c.username}</span>
+                            <span>${date}</span>
+                        </div>
+                        <div class="comment-text">${c.content}</div>
+                    </div>
+                `;
+            });
+        }
+
+        async function postComment(bookId) {
+            if (!currentUser) return;
+            const input = document.getElementById(`comment-input-${bookId}`);
+            const content = input.value.trim();
+            if (!content) return;
+
+            await fetch(`/api/books/${bookId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser.username, content })
+            });
+
+            input.value = '';
+            await loadComments(bookId);
+            updateStats(); 
+        }
+
+        // --- DODAWANIE / EDYCJA ---
+        document.getElementById('addBookForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            if (!currentUser) return;
+            
+            const payload = {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                genre: document.getElementById('genre').value,
+                cover_url: document.getElementById('coverUrl').value,
+                rating: parseInt(document.getElementById('rating').value),
+                description: document.getElementById('description').value
+            };
+
+            if (editingId) {
+                await fetch('/api/books/' + editingId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            } else {
+                await fetch('/api/books', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            }
+
+            resetFormState();
+            fetchBooks();
+            // Jeśli byliśmy w widoku autora, bezpieczniej będzie wrócić do katalogu po edycji
+            closeAuthorView();
+        });
+
+        function startEdit(id) {
+            if (!currentUser || currentUser.role !== 'admin') return;
+            const book = currentBooks.find(b => b.id === id);
+            if (!book) return;
+
+            editingId = id;
+            document.getElementById('title').value = book.title;
+            document.getElementById('author').value = book.author;
+            document.getElementById('genre').value = book.genre || "Literatura piękna";
+            document.getElementById('coverUrl').value = book.cover_url || "";
+            document.getElementById('rating').value = book.rating;
+            document.getElementById('description').value = book.description;
+
+            document.getElementById('formTitle').innerText = 'Edytuj książkę';
+            document.getElementById('submitBtn').innerText = 'Zapisz zmiany';
+            document.getElementById('submitBtn').style.backgroundColor = '#0056b3';
+            document.getElementById('cancelBtn').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetFormState() {
+            editingId = null;
+            document.getElementById('addBookForm').reset();
+            document.getElementById('rating').value = "10";
+            document.getElementById('formTitle').innerText = 'Dodaj książkę';
+            document.getElementById('submitBtn').innerText = 'Dodaj do biblioteki';
+            document.getElementById('submitBtn').style.backgroundColor = 'var(--lc-green)';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        async function deleteBook(id) {
+            if (!currentUser || currentUser.role !== 'admin') return;
+            if(confirm("Na pewno chcesz usunąć ten wpis? Usunięte zostaną również komentarze!")) {
+                if(editingId === id) resetFormState(); 
+                await fetch('/api/books/' + id, { method: 'DELETE' });
+                fetchBooks();
+                closeAuthorView();
+            }
+        }
+    </script>
+</body>
+</html>
